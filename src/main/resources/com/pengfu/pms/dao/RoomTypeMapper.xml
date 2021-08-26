@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pengfu.pms.dao.RoomTypeMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="rtid" parameterType="roomType">
+        INSERT INTO room_type
+        VALUES (NULL, #{name}, #{number}, #{area}, #{rent})
+    </insert>
+
+    <delete id="deleteById">
+        DELETE FROM room_type
+        WHERE rtid = #{rtid}
+    </delete>
+
+    <select id="select" resultType="roomType">
+        SELECT * FROM room_type
+    </select>
+
+</mapper>

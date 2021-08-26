@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pengfu.pms.dao.RoleMapper">
+
+    <!-- 封装角色类型对象 -->
+    <resultMap id="roleMap" type="role">
+        <id property="rid" column="rid"/>
+        <result property="nameZh" column="name_zh"/>
+        <!-- 封装菜单对象 -->
+        <collection property="menus" ofType="menu">
+            <id property="id" column="mid"/>
+            <result property="code" column="code"/>
+            <result property="desc" column="desc"/>
+        </collection>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="rid" parameterType="role">
+        INSERT INTO role
+        VALUES (NULL, #{nameZh})
+    </insert>
+
+    <insert id="insertJoinMenu" parameterType="role">
+        INSERT INTO menu__role
+        VALUES
+        <foreach collection="menus" item="menu" separator=",">
+            (NULL, #{menu.id}, #{rid})
+        </foreach>
+    </insert>
+
+    <delete id="deleteById">
+        DELETE FROM role
+        WHERE rid = #{rid}
+    </delete>
+
+    <select id="select" resultMap="roleMap">
+        SELECT * FROM ROLE
+        LEFT JOIN menu__role
+        ON role.rid = menu__role.role_id
+        LEFT JOIN menu
+        ON menu.mid = menu__role.menu_id
+    </select>
+
+    <delete id="deleteMenus">
+        DELETE FROM menu__role
+        WHERE role_id = #{rid}
+    </delete>
+
+</mapper>

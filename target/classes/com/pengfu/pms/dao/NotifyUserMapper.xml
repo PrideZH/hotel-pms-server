@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pengfu.pms.dao.NotifyUserMapper">
+
+    <!-- 封装公告用户对象 -->
+    <resultMap id="notifyUserMap" type="notifyUser">
+        <id property="id" column="NUid"/>
+        <result property="recipientId" column="recipient_id"/>
+        <result property="state" column="NUstate"/>
+        <result property="readTime" column="NUread_time"/>
+        <result property="createdTime" column="NUcreated_time"/>
+        <collection property="notify" ofType="notify">
+            <id property="id" column="Nid"/>
+            <result property="senderId" column="sender_id"/>
+            <result property="title" column="Ntitle"/>
+            <result property="content" column="Ncontent"/>
+            <result property="createdTime" column="Ncreated_time"/>
+        </collection>
+    </resultMap>
+
+    <insert id="insert" parameterType="notifyUser">
+        INSERT INTO notify_user (notify_id, recipient_id)
+        VALUES (#{notify.id}, #{recipientId})
+    </insert>
+
+    <select id="selectByRecipientId" resultMap="notifyUserMap">
+        SELECT * FROM notify_user
+        JOIN notify ON notify_user.notify_id = notify.Nid
+        WHERE recipient_id = #{id}
+    </select>
+
+    <update id="update" parameterType="notifyUser">
+        UPDATE notify_user
+        SET NUstate = #{state}
+        WHERE NUid = #{id}
+    </update>
+
+</mapper>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pengfu.pms.dao.RoomMapper">
+
+    <!-- 封装房间对象 -->
+    <resultMap id="roomMap" type="room">
+        <result property="rid" column="rid"/>
+        <result property="roomNo" column="room_no"/>
+        <result property="status" column="status"/>
+        <result property="note" column="note"/>
+        <!-- 封装房间类型对象 -->
+        <collection property="roomType" ofType="roomType">
+            <result property="rtid" column="rtid"/>
+            <result property="name" column="name"/>
+            <result property="number" column="number"/>
+            <result property="area" column="area"/>
+            <result property="rent" column="rent"/>
+        </collection>
+    </resultMap>
+
+
+    <insert id="insert" parameterType="room">
+        INSERT INTO room
+        VALUES (NULL, #{roomNo}, #{status}, #{roomType.rtid}, #{note})
+    </insert>
+
+    <insert id="insertList" parameterType="room">
+        INSERT INTO room
+        VALUES
+        <foreach collection="rooms" item="room" separator=",">
+            (NULL, #{room.roomNo}, #{room.status}, #{room.roomType.rtid}, #{room.note})
+        </foreach>
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM room
+        WHERE rid = #{rid}
+    </delete>
+
+    <select id="selectRoom" resultMap="roomMap">
+        SELECT * FROM room
+        JOIN room_type
+        ON room.room_type_id = room_type.rtid
+        <where>
+            <if test="minRent != null">
+                rent &gt;= #{minRent}
+            </if>
+            <if test="maxRent != null">
+                AND rent &lt;= #{maxRent}
+            </if>
+            <if test="name != null">
+                AND name = #{name}
+            </if>
+            <if test="number != null">
+                AND number = #{number}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="inDate != null and days != null">
+                AND NOT EXISTS (
+                    SELECT * FROM `order`
+                    WHERE order.room_id = room.rid
+                        AND (order.in_date BETWEEN #{inDate} AND ADDDATE(#{inDate}, #{days})
+                        OR ADDDATE(order.in_date, order.days) BETWEEN #{inDate} AND ADDDATE(#{inDate}, #{days}))
+                )
+            </if>
+        </where>
+    </select>
+
+    <select id="selectById" resultMap="roomMap">
+        SELECT * FROM room WHERE rid=#{rid}
+    </select>
+
+    <update id="update" parameterType="room">
+        UPDATE room
+        SET room_no = #{roomNo}, note = #{note}, room_type_id = #{roomType.rtid}
+        WHERE rid = #{rid}
+    </update>
+
+</mapper>

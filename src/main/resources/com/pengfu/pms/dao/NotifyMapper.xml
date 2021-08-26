@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pengfu.pms.dao.NotifyMapper">
+
+    <!-- 封装公告对象 -->
+    <resultMap id="notifyMap" type="notify">
+        <id property="id" column="Nid"/>
+        <result property="senderId" column="sender_id"/>
+        <result property="title" column="Ntitle"/>
+        <result property="content" column="Ncontent"/>
+        <result property="createdTime" column="Ncreated_time"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="notify">
+        INSERT INTO notify (sender_id, Ntitle, Ncontent)
+        VALUES (#{senderId}, #{title}, #{content})
+    </insert>
+
+    <select id="selectNew" resultMap="notifyMap">
+        SELECT *
+        FROM notify
+        WHERE Ncreated_time > IFNULL(
+            (SELECT MAX(NUcreated_time) FROM notify_user WHERE recipient_id = 1),
+            (SELECT Ucreated_time FROM `user` WHERE id = #{id})
+        )
+    </select>
+
+    <update id="update" parameterType="notify">
+        UPDATE notify
+        SET Ntitle = #{title}, Ncontent = #{content}
+        WHERE Nid = #{id}
+    </update>
+
+</mapper>

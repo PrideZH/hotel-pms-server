@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pengfu.pms.dao.CustomerMapper">
+
+    <!-- 封装订单对象 -->
+    <resultMap id="customerMap" type="customer">
+        <id property="cid" column="cid"/>
+        <result property="name" column="Cname"/>
+        <result property="age" column="age"/>
+        <result property="gender" column="gender"/>
+        <result property="idCard" column="id_card"/>
+        <result property="mobile" column="mobile"/>
+        <result property="level" column="level"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="cid" parameterType="customer">
+        INSERT INTO customer (Cname, age, gender, id_card, mobile)
+        VALUES (#{name}, #{age}, #{gender}, #{idCard}, #{mobile})
+    </insert>
+    
+    <delete id="deleteById">
+        DELETE FROM customer
+        WHERE cid = #{id}
+    </delete>
+
+    <select id="select" resultMap="customerMap">
+        SELECT * FROM customer
+    </select>
+
+    <select id="selectById" resultMap="customerMap">
+        SELECT * FROM customer WHERE cid=#{cid}
+    </select>
+
+    <select id="selectByInfo" resultMap="customerMap">
+        SELECT * FROM customer
+        WHERE Cname = #{name} AND gender = #{gender} AND id_card = #{idCard} AND mobile = #{mobile}
+    </select>
+
+    <select id="selectByIdCard" resultMap="customerMap">
+        SELECT * FROM customer
+        WHERE id_card = #{idCard}
+    </select>
+
+    <update id="update" parameterType="customer">
+        UPDATE customer
+        SET Cname = #{name}, age = #{age}, gender = #{gender}, id_card = #{idCard}, mobile = #{mobile},
+            `level` = #{level}
+        WHERE cid = #{cid}
+    </update>
+
+    <select id="today" resultType="Integer">
+        SELECT COUNT(*)
+        FROM customer
+        WHERE TO_DAYS(create_time) = TO_DAYS(NOW())
+    </select>
+
+    <select id="total" resultType="Integer">
+        SELECT COUNT(*)
+        FROM customer
+    </select>
+
+</mapper>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pengfu.pms.dao.OrderMapper">
+
+    <!-- 封装订单对象 -->
+    <resultMap id="orderMap" type="order">
+        <id property="oid" column="oid"/>
+        <result property="contactsName" column="contacts_name"/>
+        <result property="contactsMobile" column="contacts_mobile"/>
+        <result property="inDate" column="in_date"/>
+        <result property="days" column="days"/>
+        <result property="orderNote" column="order_note"/>
+        <result property="deposit" column="deposit"/>
+        <result property="totalAmount" column="total_amount"/>
+        <result property="paymentTime" column="payment_time"/>
+        <result property="payStatus" column="pay_status"/>
+        <result property="createTime" column="create_time"/>
+        <!--  封装房间对象 -->
+        <collection property="room" ofType="room">
+            <result property="rid" column="rid"/>
+            <result property="roomNo" column="room_no"/>
+            <result property="status" column="status"/>
+            <result property="note" column="note"/>
+            <!-- 封装房间类型对象 -->
+            <collection property="roomType" ofType="roomType">
+                <result property="rtid" column="rtid"/>
+                <result property="name" column="name"/>
+                <result property="number" column="number"/>
+                <result property="area" column="area"/>
+                <result property="rent" column="rent"/>
+            </collection>
+        </collection>
+        <!-- 封装顾客对象 -->
+        <collection property="customers" ofType="customer">
+            <id property="cid" column="cid"/>
+            <result property="name" column="Cname"/>
+            <result property="age" column="age"/>
+            <result property="gender" column="gender"/>
+            <result property="idCard" column="id_card"/>
+            <result property="mobile" column="mobile"/>
+            <result property="level" column="level"/>
+        </collection>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="oid" parameterType="order">
+        INSERT INTO
+            `order` (room_id, in_date, days, contacts_name, contacts_mobile, deposit, total_amount, order_note)
+        VALUES
+            (#{room.rid}, #{inDate}, #{days}, #{contactsName}, #{contactsMobile}, #{deposit}, #{totalAmount},
+            #{orderNote})
+    </insert>
+
+    <insert id="insertOrderCustomer">
+        INSERT INTO order__customer (order_id, customer_id)
+        VALUES (#{oid}, #{cid})
+    </insert>
+
+    <select id="select" resultMap="orderMap">
+        SELECT * FROM `order`
+        LEFT JOIN room
+        ON order.room_id = room.rid
+        LEFT JOIN room_type
+        ON room.room_type_id = room_type.rtid
+        LEFT JOIN order__customer
+        ON order.oid = order__customer.order_id
+        LEFT JOIN customer
+        ON customer.cid = order__customer.customer_id
+        ORDER BY order.create_time DESC
+    </select>
+
+    <update id="update" parameterType="order">
+        UPDATE `order`
+        SET pay_status = #{payStatus}, order_note = #{orderNote}, payment_time = #{paymentTime}
+        WHERE oid = #{oid}
+    </update>
+
+    <select id="today" resultType="Integer">
+        SELECT COUNT(*)
+        FROM `order`
+        WHERE TO_DAYS(create_time) = TO_DAYS(NOW())
+    </select>
+
+    <select id="total" resultType="Integer">
+        SELECT COUNT(*)
+        FROM `order`
+    </select>
+
+    <select id="selectYear" resultType="order">
+        SELECT payment_time, total_amount  FROM `order`
+        WHERE pay_status = 1 AND YEAR(payment_time) = YEAR(NOW())
+    </select>
+
+</mapper>

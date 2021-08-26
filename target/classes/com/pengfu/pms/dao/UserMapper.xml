@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.pengfu.pms.dao.UserMapper">
+
+    <!-- 封装用户对象 -->
+    <resultMap id="userMap" type="user">
+        <result property="id" column="id"/>
+        <result property="email" column="email"/>
+        <result property="pwd" column="pwd"/>
+        <result property="name" column="name"/>
+        <result property="mob" column="mob"/>
+        <result property="portrait" column="portrait" jdbcType="BLOB" />
+        <!-- 封装角色对象 -->
+        <collection property="roles" ofType="role">
+            <result property="rid" column="rid"/>
+            <result property="roleName" column="role_name"/>
+            <result property="nameZh" column="name_zh"/>
+            <!-- 封装菜单对象 -->
+            <collection property="menus" ofType="menu">
+                <id property="id" column="mid" />
+                <result property="code" column="code"/>
+                <result property="desc" column="desc"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="selectAll" resultMap="userMap">
+        SELECT * FROM user
+        LEFT JOIN user__role
+        ON user.id=user__role.user_id
+        LEFT JOIN `role`
+        ON role.rid=user__role.role_id
+    </select>
+
+    <!-- 根据id查 -->
+    <select id="selectById" resultType="user">
+        SELECT *
+        FROM user
+        WHERE id=#{id}
+	</select>
+
+    <select id="selectByEmail" resultType="user">
+        SELECT *
+        FROM user
+        WHERE email=#{email}
+	</select>
+
+    <select id="selectByToken" resultMap="userMap">
+        SELECT * FROM `user`
+        LEFT JOIN user__role
+        ON user.id=user__role.user_id
+        LEFT JOIN `role`
+        ON role.rid=user__role.role_id
+        LEFT JOIN menu__role
+        ON role.rid=menu__role.role_id
+        LEFT JOIN menu
+        ON menu.mid=menu__role.menu_id
+        WHERE token=#{token}
+    </select>
+
+    <select id="selectToken" resultType="user">
+        SELECT *
+        FROM user
+        WHERE token=#{token}
+    </select>
+
+    <insert id="insert" parameterType="user">
+        INSERT INTO user (email, pwd, `name`, mob)
+        VALUES (
+            #{email},
+            #{pwd}
+            <if test="name != null">
+                ,#{name}
+            </if>
+            <if test="mob != null">
+                ,#{mob}
+            </if>
+        )
+    </insert>
+
+    <delete id="deleteByUid">
+        DELETE FROM user
+        WHERE id = #{id}
+    </delete>
+
+    <update id="updateToken">
+        UPDATE user
+        SET token=#{token},token_exp=#{tokenExp}
+        WHERE id=#{id}
+    </update>
+
+    <insert id="insertRole">
+        INSERT INTO user__role
+        VALUES
+        <foreach collection="rids" item="rid" separator=",">
+            (NULL, #{uid}, #{rid})
+        </foreach>
+    </insert>
+
+    <delete id="deleteRoleByUid">
+        DELETE FROM user__role
+        WHERE user_id = #{uid}
+    </delete>
+
+    <select id="selectRoleByUid" resultType="Role">
+        SELECT * FROM `role`
+        JOIN user__role
+        ON `role`.rid = user__role.role_id
+        WHERE user_id = #{uid}
+    </select>
+
+    <update id="update" parameterType="user">
+        UPDATE `user`
+        SET pwd = #{pwd}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updatePortrait" parameterType="user">
+        UPDATE `user`
+        SET portrait = #{portrait}
+        WHERE id = #{id}
+    </update>
+
+</mapper>
